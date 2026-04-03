@@ -1,0 +1,205 @@
+<script>
+  const testKey = "entry is valid";
+
+  const urls = [
+    {
+      encryptedTestKey: {
+        iv: [82, 12, 0, 186, 233, 130, 17, 248, 117, 147, 139, 64],
+        ciphertext: [
+          202, 191, 209, 177, 185, 242, 202, 232, 58, 32, 28, 31, 52, 163, 133,
+          0, 101, 180, 127, 174, 143, 252, 4, 46, 117, 161, 238, 142, 200, 15,
+        ],
+      },
+      url: {
+        iv: [203, 248, 213, 254, 222, 107, 111, 141, 91, 222, 64, 145],
+        ciphertext: [
+          177, 112, 16, 202, 197, 6, 202, 65, 219, 37, 220, 244, 140, 240, 205,
+          18, 215, 49, 132, 87, 88, 78, 51, 198, 29, 99, 234, 110, 175, 96, 25,
+          79, 124, 164, 95, 211, 142, 162, 212, 217, 166, 204, 170, 198, 162,
+          71, 33, 170, 111, 2, 135, 56, 195, 171, 205, 252, 83, 96, 104, 118,
+          242, 115, 227, 146, 191, 254, 165, 238, 77, 15, 196, 120, 156, 18,
+          148, 220, 213, 153, 139, 136, 4, 96, 238, 4, 218, 39, 231, 67, 222,
+          33, 216, 85, 112, 120, 111, 76, 214, 172, 250, 163, 176, 127, 26, 156,
+          80, 245, 153, 158, 65, 168, 159, 59, 98, 98, 32, 238, 49, 190, 167,
+          246, 175, 134, 200, 10, 31, 46, 243, 143, 50, 0, 168, 141, 119, 166,
+          135, 99, 161, 115, 249, 80, 186, 171, 245, 72, 27, 91, 245, 93, 103,
+          147, 217, 252, 14, 3, 40, 205, 90, 22, 186, 47, 187, 48, 17, 197, 79,
+          65, 239, 225, 69, 254, 14, 18, 188, 98, 210, 99, 244, 97, 95, 115, 44,
+          211, 237, 247, 200, 114, 10, 45, 157, 26, 232, 241, 29, 198, 232, 46,
+          217, 134, 110, 212, 47, 112, 112, 24, 0, 25, 53, 250, 112, 57, 127,
+          228, 130, 43, 12, 172, 88, 197, 251, 53, 239, 16, 180, 91, 56, 33,
+          238, 220, 92, 223, 232, 19, 18, 162, 142, 202, 231, 96, 129, 119, 58,
+          238, 69, 19, 190, 225, 73, 192, 110, 69, 5, 144, 222, 242, 52, 65,
+          163, 170, 32, 38, 175, 131, 37, 41, 175, 207, 56, 243, 106, 18, 108,
+          255, 39, 85, 235, 159, 92, 51, 4, 150, 235, 133, 75, 58, 224, 122,
+          200, 203, 135, 237, 47, 92, 96, 241, 36, 174, 222, 10, 213, 232, 201,
+          131, 172, 4, 84,
+        ],
+      },
+    },
+  ];
+
+  //   async function encrypt(text, password) {
+  //     const enc = new TextEncoder();
+
+  //     // 1. derive key from password (simple version)
+  //     const keyMaterial = await crypto.subtle.digest(
+  //       "SHA-256",
+  //       enc.encode(password)
+  //     );
+
+  //     const key = await crypto.subtle.importKey(
+  //       "raw",
+  //       keyMaterial,
+  //       { name: "AES-GCM" },
+  //       false,
+  //       ["encrypt"]
+  //     );
+
+  //     // 2. random IV (VERY important)
+  //     const iv = crypto.getRandomValues(new Uint8Array(12));
+
+  //     // 3. encrypt
+  //     const ciphertext = await crypto.subtle.encrypt(
+  //       { name: "AES-GCM", iv },
+  //       key,
+  //       enc.encode(text)
+  //     );
+
+  //     return { iv, ciphertext };
+  //   }
+
+  //   async function decrypt(ciphertext, iv, password) {
+  //     const enc = new TextEncoder();
+  //     const dec = new TextDecoder();
+
+  //     const keyMaterial = await crypto.subtle.digest(
+  //       "SHA-256",
+  //       enc.encode(password)
+  //     );
+
+  //     const key = await crypto.subtle.importKey(
+  //       "raw",
+  //       keyMaterial,
+  //       { name: "AES-GCM" },
+  //       false,
+  //       ["decrypt"]
+  //     );
+
+  //     const plaintext = await crypto.subtle.decrypt(
+  //       { name: "AES-GCM", iv },
+  //       key,
+  //       ciphertext
+  //     );
+
+  //     return dec.decode(plaintext);
+  //   }
+
+  async function encrypt(text, password) {
+    const enc = new TextEncoder();
+
+    // 1. derive key
+    const keyMaterial = await crypto.subtle.digest(
+      "SHA-256",
+      enc.encode(password)
+    );
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyMaterial,
+      { name: "AES-GCM" },
+      false,
+      ["encrypt"]
+    );
+
+    // 2. random IV
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    // 3. encrypt
+    const ciphertextBuffer = await crypto.subtle.encrypt(
+      { name: "AES-GCM", iv },
+      key,
+      enc.encode(text)
+    );
+
+    // ✅ convert to normal arrays
+    return {
+      iv: Array.from(iv),
+      ciphertext: Array.from(new Uint8Array(ciphertextBuffer)),
+    };
+  }
+
+  async function decrypt(ciphertextArray, ivArray, password) {
+    const enc = new TextEncoder();
+    const dec = new TextDecoder();
+
+    // 1. derive key
+    const keyMaterial = await crypto.subtle.digest(
+      "SHA-256",
+      enc.encode(password)
+    );
+
+    const key = await crypto.subtle.importKey(
+      "raw",
+      keyMaterial,
+      { name: "AES-GCM" },
+      false,
+      ["decrypt"]
+    );
+
+    // ✅ convert arrays back to typed arrays
+    const iv = new Uint8Array(ivArray);
+    const ciphertext = new Uint8Array(ciphertextArray);
+
+    const plaintextBuffer = await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv },
+      key,
+      ciphertext
+    );
+
+    return dec.decode(plaintextBuffer);
+  }
+
+  async function redirect() {
+    const params = new URLSearchParams(window.location.search);
+    const g = params.get("g");
+
+    console.log({ g });
+
+    let url = null;
+    for (let i = 0; i < urls.length; i++) {
+      const el = urls[0];
+      const test = el.encryptedTestKey;
+      try {
+        if (await decrypt(test.ciphertext, test.iv, g)) {
+          url = await decrypt(el.url.ciphertext, el.url.iv, g);
+          document.location.href = url;
+          break;
+        }
+      } catch (e) {}
+    }
+  }
+
+  async function newUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get("url");
+    const key = params.get("key");
+
+    if (key === null) return false;
+
+    const entry = {
+      encryptedTestKey: await encrypt(testKey, key),
+      url: await encrypt(url, key),
+    };
+
+    console.log(entry);
+
+    return true;
+  }
+
+  async function doit() {
+    if (!(await newUrl())) redirect();
+  }
+
+  doit();
+</script>

@@ -2,64 +2,7 @@
   <script>
     const testKey = "entry is valid";
 
-    const urls = [
-      {
-        encryptedTestKey: {
-          iv: [82, 12, 0, 186, 233, 130, 17, 248, 117, 147, 139, 64],
-          ciphertext: [
-            202, 191, 209, 177, 185, 242, 202, 232, 58, 32, 28, 31, 52, 163,
-            133, 0, 101, 180, 127, 174, 143, 252, 4, 46, 117, 161, 238, 142,
-            200, 15,
-          ],
-        },
-        url: {
-          iv: [203, 248, 213, 254, 222, 107, 111, 141, 91, 222, 64, 145],
-          ciphertext: [
-            177, 112, 16, 202, 197, 6, 202, 65, 219, 37, 220, 244, 140, 240,
-            205, 18, 215, 49, 132, 87, 88, 78, 51, 198, 29, 99, 234, 110, 175,
-            96, 25, 79, 124, 164, 95, 211, 142, 162, 212, 217, 166, 204, 170,
-            198, 162, 71, 33, 170, 111, 2, 135, 56, 195, 171, 205, 252, 83, 96,
-            104, 118, 242, 115, 227, 146, 191, 254, 165, 238, 77, 15, 196, 120,
-            156, 18, 148, 220, 213, 153, 139, 136, 4, 96, 238, 4, 218, 39, 231,
-            67, 222, 33, 216, 85, 112, 120, 111, 76, 214, 172, 250, 163, 176,
-            127, 26, 156, 80, 245, 153, 158, 65, 168, 159, 59, 98, 98, 32, 238,
-            49, 190, 167, 246, 175, 134, 200, 10, 31, 46, 243, 143, 50, 0, 168,
-            141, 119, 166, 135, 99, 161, 115, 249, 80, 186, 171, 245, 72, 27,
-            91, 245, 93, 103, 147, 217, 252, 14, 3, 40, 205, 90, 22, 186, 47,
-            187, 48, 17, 197, 79, 65, 239, 225, 69, 254, 14, 18, 188, 98, 210,
-            99, 244, 97, 95, 115, 44, 211, 237, 247, 200, 114, 10, 45, 157, 26,
-            232, 241, 29, 198, 232, 46, 217, 134, 110, 212, 47, 112, 112, 24, 0,
-            25, 53, 250, 112, 57, 127, 228, 130, 43, 12, 172, 88, 197, 251, 53,
-            239, 16, 180, 91, 56, 33, 238, 220, 92, 223, 232, 19, 18, 162, 142,
-            202, 231, 96, 129, 119, 58, 238, 69, 19, 190, 225, 73, 192, 110, 69,
-            5, 144, 222, 242, 52, 65, 163, 170, 32, 38, 175, 131, 37, 41, 175,
-            207, 56, 243, 106, 18, 108, 255, 39, 85, 235, 159, 92, 51, 4, 150,
-            235, 133, 75, 58, 224, 122, 200, 203, 135, 237, 47, 92, 96, 241, 36,
-            174, 222, 10, 213, 232, 201, 131, 172, 4, 84,
-          ],
-        },
-      },
-      {
-        encryptedTestKey: {
-          iv: [147, 225, 108, 215, 46, 214, 243, 33, 90, 190, 141, 157],
-          ciphertext: [
-            80, 205, 47, 105, 247, 98, 96, 145, 144, 253, 136, 216, 167, 22,
-            149, 123, 89, 18, 228, 104, 246, 39, 76, 87, 238, 25, 89, 44, 161,
-            36,
-          ],
-        },
-        url: {
-          iv: [171, 73, 112, 141, 12, 21, 247, 12, 24, 206, 223, 181],
-          ciphertext: [
-            202, 49, 142, 189, 5, 92, 38, 98, 103, 94, 126, 189, 102, 209, 26,
-            63, 156, 214, 21, 21, 195, 121, 226, 90, 183, 49, 131, 191, 241, 44,
-            189, 46, 169, 9, 169, 229, 226, 88, 255, 66, 189, 156, 161, 157, 37,
-            184, 239, 213, 116, 2, 239, 130, 245, 199, 45, 18, 34, 89, 234, 74,
-            12,
-          ],
-        },
-      },
-    ];
+    const urls = [];
 
     async function encrypt(text, password) {
       const enc = new TextEncoder();
@@ -164,8 +107,9 @@
       const url = params.get("url");
 
       if (url === null) return false;
+      const key = params.get("key");
 
-      const entry = await createOne(url);
+      const entry = await createOne(url, key);
       console.log({ entry });
 
       showNewUrl(entry);
@@ -195,19 +139,22 @@
       return result;
     }
 
-    async function createOne(url) {
-      let key;
-      for (let i = 0; i < 100; i++) {
-        key = createRandomKey(20);
-        if ((await lookup(key)) === null) {
-          break;
+    async function createOne(url, key) {
+      let existing;
+      if (!key) {
+        for (let i = 0; i < 100; i++) {
+          key = createRandomKey(20);
+          if ((await lookup(key)) === null) {
+            break;
+          }
+          if (i === 99) {
+            alert("Could not find a new unique key after 100 tries.");
+            return null;
+          }
         }
-        if (i === 99) {
-          alert("Could not find a new unique key after 100 tries.");
-          return null;
-        }
+      } else {
+        existing = await lookup(key);
       }
-
       const entry = {
         encryptedTestKey: await encrypt(testKey, key),
         url: await encrypt(url, key),
@@ -216,21 +163,33 @@
       const linkUrl =
         document.location.origin + document.location.pathname + "?g=" + key;
 
-      return { key, entry, linkUrl };
+      return { key, entry, linkUrl, existing, url };
     }
 
     function showNewUrl(entry) {
       const anchor = document.getElementById("result-anchor");
       const link = document.getElementById("result-link");
+      const urlAnchor = document.getElementById("result-url-anchor");
+      const url = document.getElementById("result-url");
       const json = document.getElementById("result-json");
+      const jsonExisting = document.getElementById("result-json-existing");
       const key = document.getElementById("result-key");
 
       anchor.setAttribute("href", entry.linkUrl);
       anchor.innerText = entry.linkUrl;
+      urlAnchor.setAttribute("href", entry.url);
+      urlAnchor.innerText = entry.url;
       link.value = entry.linkUrl;
+      url.value = entry.url;
       json.value = JSON.stringify(entry.entry, null, "    ");
+      jsonExisting.value = JSON.stringify(entry.existing, null, "    ");
       key.value = entry.key;
+
       document.body.classList.add("show-result-table");
+
+      if (entry.existing) {
+        document.body.classList.add("show-result-table-with-existing");
+      }
     }
   </script>
   <style>
@@ -241,34 +200,39 @@
     body:not(.show-result-table) #result-table {
       display: none;
     }
+
+    body:not(.show-result-table-with-existing)
+      #result-table
+      tr:has(#result-json-existing) {
+      display: none;
+    }
   </style>
   <body>
-    <table
-      class="create-form"
-      style="
-        margin: 40px auto;
-        border-collapse: separate;
-        border-spacing: 12px;
-        background: #f9f9f9;
-        box-shadow: 0 2px 8px #0001;
-        border-radius: 8px;
-        padding: 24px;
-      "
+    <form
+      id="create-link-form"
+      style="display: flex; gap: 8px; align-items: center; margin: 0"
     >
-      <tr>
-        <td style="padding: 12px 8px; font-weight: bold; text-align: right">
-          URL:
-        </td>
-        <td style="padding: 12px 8px">
-          <form
-            id="create-link-form"
-            style="display: flex; gap: 8px; align-items: center; margin: 0"
-          >
+      <table
+        class="create-form"
+        style="
+          margin: 40px auto;
+          border-collapse: separate;
+          border-spacing: 12px;
+          background: #f9f9f9;
+          box-shadow: 0 2px 8px #0001;
+          border-radius: 8px;
+          padding: 24px;
+        "
+      >
+        <tr>
+          <td style="padding: 12px 8px; font-weight: bold; text-align: right">
+            URL:
+          </td>
+          <td style="padding: 12px 8px">
             <input
               type="url"
               id="url-input"
               name="url"
-              required
               autofocus
               style="
                 padding: 8px;
@@ -290,10 +254,43 @@
             >
               Create Link
             </button>
-          </form>
-        </td>
-      </tr>
-    </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 8px; font-weight: bold; text-align: right">
+            KEY:
+          </td>
+          <td style="padding: 12px 8px">
+            <input
+              type="text"
+              id="key-input"
+              name="key"
+              required
+              autofocus
+              style="
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                width: 320px;
+              "
+            />
+            <button
+              style="
+                padding: 8px 18px;
+                border: none;
+                background: #0078d4;
+                color: #fff;
+                border-radius: 4px;
+                font-weight: bold;
+                cursor: pointer;
+              "
+            >
+              Edit Link
+            </button>
+          </td>
+        </tr>
+      </table>
+    </form>
 
     <table
       id="result-table"
@@ -328,7 +325,7 @@
       </tr>
       <tr>
         <td style="padding: 12px 8px; font-weight: bold; text-align: right">
-          JSON Entry:
+          Add JSON Entry:
         </td>
         <td style="padding: 12px 8px">
           <textarea
@@ -376,6 +373,58 @@
           >
             Open Link
           </a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 8px; font-weight: bold; text-align: right">
+          URL:
+        </td>
+        <td style="padding: 12px 8px">
+          <input
+            id="result-url"
+            type="text"
+            readonly
+            style="
+              width: 320px;
+              padding: 8px;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+            "
+          />
+          <br />
+          <a
+            id="result-url-anchor"
+            href="#"
+            target="_blank"
+            style="
+              display: inline-block;
+              margin-top: 8px;
+              color: #0078d4;
+              text-decoration: underline;
+              font-weight: bold;
+            "
+          >
+            Open Link
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 12px 8px; font-weight: bold; text-align: right">
+          Remove JSON Entry:
+        </td>
+        <td style="padding: 12px 8px">
+          <textarea
+            id="result-json-existing"
+            readonly
+            rows="8"
+            style="
+              width: 320px;
+              padding: 8px;
+              border: 1px solid #ccc;
+              border-radius: 4px;
+              font-family: monospace;
+            "
+          ></textarea>
         </td>
       </tr>
     </table>

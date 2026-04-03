@@ -173,7 +173,7 @@
       try {
         if (await decrypt(test.ciphertext, test.iv, g)) {
           url = await decrypt(el.url.ciphertext, el.url.iv, g);
-          document.location.href = url;
+          console.log(url);
           break;
         }
       } catch (e) {}
@@ -199,6 +199,15 @@
 
   async function doit() {
     if (!(await newUrl())) redirect();
+  }
+
+  async function createOne(key, url) {
+    const entry = {
+      encryptedTestKey: await encrypt(testKey, key),
+      url: await encrypt(url, key),
+    };
+
+    return entry;
   }
 
   doit();

@@ -127,6 +127,9 @@
 
     function showCreateForm() {
       document.body.classList.add("show-create-form");
+      const params = new URLSearchParams(window.location.search);
+      const key = params.get("key");
+      document.getElementById("key-input").value = key || "";
     }
 
     function createRandomKey(size) {
@@ -442,3 +445,4 @@
     </script>
   </body>
 </html>
+

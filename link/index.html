@@ -139,20 +139,30 @@
       return result;
     }
 
+    async function findNewKey() {
+      for (let i = 0; i < 100; i++) {
+        let key = createRandomKey(20);
+        if ((await lookup(key)) === null) {
+          return key;
+        }
+        if (i === 99) {
+          alert("Could not find a new unique key after 100 tries.");
+          return null;
+        }
+      }
+
+      return null;
+    }
+
     async function createOne(url, key) {
       let existing;
       if (!key) {
-        for (let i = 0; i < 100; i++) {
-          key = createRandomKey(20);
-          if ((await lookup(key)) === null) {
-            break;
-          }
-          if (i === 99) {
-            alert("Could not find a new unique key after 100 tries.");
-            return null;
-          }
-        }
+        key = findNewKey();
       } else {
+        if (key.includes("%")) {
+          let token = await findNewKey();
+          key = key.replace("%", token);
+        }
         existing = await lookup(key);
       }
       const entry = {
@@ -265,7 +275,6 @@
               type="text"
               id="key-input"
               name="key"
-              required
               autofocus
               style="
                 padding: 8px;

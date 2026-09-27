@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ωρολόγιο Α΄ Τάξης</title>
+<style>
+  :root {
+    --bg: #F3F6F9;
+    --surface: #FFFFFF;
+    --ink: #17222E;
+    --ink-soft: #55657A;
+    --line: #DCE3EB;
+    --accent: #1F5FA8;
+    --break-bg: #E9EEF3;
+    /* subject cells: each subject sets --h (hue); theme sets these */
+    --cell-s: 70%;
+    --cell-l: 93%;
+    --cell-edge-l: 78%;
+    --cell-ink-l: 24%;
+    --now-ring: #1F5FA8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0F151C;
+      --surface: #161F29;
+      --ink: #E6EDF4;
+      --ink-soft: #93A3B6;
+      --line: #263342;
+      --accent: #7FB2F0;
+      --break-bg: #1B2632;
+      --cell-s: 32%;
+      --cell-l: 21%;
+      --cell-edge-l: 34%;
+      --cell-ink-l: 88%;
+      --now-ring: #7FB2F0;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0F151C;
+    --surface: #161F29;
+    --ink: #E6EDF4;
+    --ink-soft: #93A3B6;
+    --line: #263342;
+    --accent: #7FB2F0;
+    --break-bg: #1B2632;
+    --cell-s: 32%;
+    --cell-l: 21%;
+    --cell-edge-l: 34%;
+    --cell-ink-l: 88%;
+    --now-ring: #7FB2F0;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans", "Segoe UI", "DejaVu Sans", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 16px;
+    padding-block: 28px 40px;
+    display: grid;
+    gap: 22px;
+  }
+
+  header { display: grid; gap: 6px; }
+  .school {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .school small { display: block; font-weight: 500; letter-spacing: .04em; color: var(--ink-soft); text-transform: none; }
+  h1 {
+    margin: 4px 0 0;
+    font-family: "Noto Serif", Georgia, "DejaVu Serif", serif;
+    font-weight: 700;
+    font-size: clamp(26px, 5vw, 38px);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  .es { display: block; font-family: inherit; font-weight: 400; color: var(--ink-soft); }
+  h1 .es { font-size: 15px; margin-top: 6px; }
+  .note { margin: 0; font-size: 13px; color: var(--ink-soft); max-width: 65ch; }
+  .note .es { display: inline; }
+
+  /* ---------- wide: full week table ---------- */
+  .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 760px; table-layout: fixed; }
+  col.c-time { width: 104px; }
+  th, td { padding: 6px; vertical-align: top; }
+  thead th {
+    text-align: left;
+    padding: 12px 8px 10px;
+    border-bottom: 1px solid var(--line);
+    font-size: 15px;
+    font-weight: 700;
+  }
+  thead th .es { font-size: 11.5px; font-weight: 500; margin-top: 1px; }
+  thead th.today { color: var(--accent); }
+  thead th.today .es { color: var(--accent); opacity: .8; }
+  .today-tag {
+    display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 99px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+    background: var(--accent); color: var(--surface); vertical-align: 2px;
+  }
+  td.today { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+  .period { font-variant-numeric: tabular-nums; }
+  .period b { display: block; font-size: 14px; }
+  .period .es { font-size: 11px; }
+  .period time { display: block; font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  .cell {
+    height: 100%;
+    min-height: 58px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    background: hsl(var(--h) var(--cell-s) var(--cell-l));
+    border: 1px solid hsl(var(--h) var(--cell-s) var(--cell-edge-l));
+    color: hsl(var(--h) 45% var(--cell-ink-l));
+    box-sizing: border-box;
+  }
+  .cell .el { display: block; font-weight: 600; font-size: 14.5px; line-height: 1.2; }
+  .cell .es { font-size: 11.5px; margin-top: 3px; color: inherit; opacity: .78; }
+  .cell.now { outline: 2.5px solid var(--now-ring); outline-offset: 1px; }
+
+  tr.break td { padding-block: 0; }
+  .break-bar {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 5px 10px; border-radius: 6px; background: var(--break-bg);
+    font-size: 12.5px; color: var(--ink-soft); font-variant-numeric: tabular-nums;
+  }
+  .break-bar b { color: var(--ink); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 11.5px; }
+  .break-bar .es { display: inline; font-size: 11.5px; }
+
+  /* ---------- narrow: one day at a time ---------- */
+  .day-view { display: none; gap: 12px; }
+  .day-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .day-tabs button {
+    font: inherit; cursor: pointer;
+    padding: 8px 2px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+    display: grid; gap: 1px; justify-items: center;
+  }
+  .day-tabs button b { font-size: 13px; }
+  .day-tabs button span { font-size: 10.5px; color: var(--ink-soft); }
+  .day-tabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+  .day-tabs button[aria-pressed="true"] span { color: var(--surface); opacity: .85; }
+  .day-tabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .day-list { display: grid; gap: 6px; }
+  .day-row { display: grid; grid-template-columns: 78px 1fr; gap: 10px; align-items: stretch; }
+  .day-row .period { padding-top: 6px; }
+
+  @media (max-width: 680px) {
+    .table-scroll { display: none; }
+    .day-view { display: grid; }
+  }
+
+  footer { font-size: 12px; color: var(--ink-soft); }
+  @media (prefers-reduced-motion: no-preference) {
+    .day-tabs button { transition: background .15s, color .15s; }
+  }
+</style>
+<style>html{color-scheme:light}body{margin:0}</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="school">Ζωγράφειο Δημοτικό Σχολείο · Ιωάννινα<small>Escuela primaria Zografeio · Ioánina</small></div>
+    <h1>Ωρολόγιο Πρόγραμμα Α΄ Τάξης<span class="es">Horario semanal · 1.º de primaria</span></h1>
+    <p class="note">Το σχολείο ενημέρωσε ότι μπορεί να υπάρξει μικρή αλλαγή τις επόμενες ημέρες.
+      <span class="es">La escuela avisó que puede haber algún pequeño cambio en los próximos días.</span></p>
+  </header>
+
+  <div class="table-scroll">
+    <table id="week">
+      <colgroup><col class="c-time"><col><col><col><col><col></colgroup>
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <section class="day-view" aria-label="Ημέρα / Día">
+    <div class="day-tabs" role="group"></div>
+    <div class="day-list"></div>
+  </section>
+
+  <footer>Πρόγραμμα της 27/9/2026 · Horario enviado el 27/9/2026</footer>
+</div>
+
+<script>
+  const S = {
+    lang:   { h: 212, el: "Γλώσσα",                es: "Lengua griega" },
+    math:   { h: 28,  el: "Μαθηματικά",            es: "Matemáticas" },
+    music:  { h: 330, el: "Μουσική",               es: "Música" },
+    german: { h: 176, el: "Γερμανικά",             es: "Alemán" },
+    art:    { h: 268, el: "Εικαστικά",             es: "Plástica" },
+    eng:    { h: 352, el: "Αγγλικά",               es: "Inglés" },
+    pe:     { h: 132, el: "Γυμναστική",            es: "Educación física" },
+    env:    { h: 84,  el: "Μελέτη Περιβάλλοντος",  es: "Conocimiento del medio" },
+    robot:  { h: 228, el: "Ρομποτική",             es: "Robótica" },
+    skills: { h: 46,  el: "Εργαστήριο Δεξιοτήτων", es: "Taller de habilidades" },
+    it:     { h: 194, el: "Πληροφορική",           es: "Informática" },
+    drama:  { h: 300, el: "Θεατρική Αγωγή",        es: "Teatro" },
+    review: { h: 210, el: "Ώρα Επαναλήψεων",       es: "Hora de repaso" },
+  };
+  const DAYS = [
+    { el: "Δευτέρα",   es: "Lunes",     short: "Δευ", esShort: "Lun" },
+    { el: "Τρίτη",     es: "Martes",    short: "Τρί", esShort: "Mar" },
+    { el: "Τετάρτη",   es: "Miércoles", short: "Τετ", esShort: "Mié" },
+    { el: "Πέμπτη",    es: "Jueves",    short: "Πέμ", esShort: "Jue" },
+    { el: "Παρασκευή", es: "Viernes",   short: "Παρ", esShort: "Vie" },
+  ];
+  // Rows in order. Periods list one subject per weekday (Mon..Fri).
+  const ROWS = [
+    { n: 1, from: "8:30",  to: "9:15",  s: ["lang", "lang", "lang", "music", "math"] },
+    { n: 2, from: "9:15",  to: "10:00", s: ["lang", "lang", "lang", "german", "lang"] },
+    { brk: true, from: "10:00", to: "10:15" },
+    { n: 3, from: "10:15", to: "11:00", s: ["german", "art", "math", "lang", "eng"] },
+    { n: 4, from: "11:00", to: "11:45", s: ["math", "math", "art", "lang", "pe"] },
+    { brk: true, from: "11:45", to: "12:00" },
+    { n: 5, from: "12:00", to: "12:40", s: ["pe", "eng", "env", "math", "robot"] },
+    { n: 6, from: "12:40", to: "13:15", s: ["env", "skills", "it", "pe", "skills"] },
+    { brk: true, from: "13:15", to: "13:40" },
+    { n: 7, from: "13:40", to: "14:20", s: ["skills", "drama", "review", "env", "review"] },
+  ];
+
+  const mins = t => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const now = new Date();
+  const todayIdx = now.getDay() >= 1 && now.getDay() <= 5 ? now.getDay() - 1 : -1;
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const isNow = r => nowMin >= mins(r.from) && nowMin < mins(r.to);
+
+  const periodHTML = r =>
+    `<div class="period"><b>${r.n}η ώρα</b><span class="es">${r.n}.ª hora</span><time>${r.from}–${r.to}</time></div>`;
+  const cellHTML = (key, live) => {
+    const x = S[key];
+    return `<div class="cell${live ? " now" : ""}" style="--h:${x.h}"><span class="el">${x.el}</span><span class="es">${x.es}</span></div>`;
+  };
+  const breakHTML = r =>
+    `<div class="break-bar"><b>Διάλειμμα</b><span class="es">Recreo</span><span>${r.from}–${r.to}</span></div>`;
+
+  // Week table
+  const table = document.getElementById("week");
+  table.tHead.innerHTML = "<tr><th></th>" + DAYS.map((d, i) =>
+    `<th class="${i === todayIdx ? "today" : ""}">${d.el}${i === todayIdx ? '<span class="today-tag">Σήμερα · Hoy</span>' : ""}<span class="es">${d.es}</span></th>`
+  ).join("") + "</tr>";
+  table.tBodies[0].innerHTML = ROWS.map(r => r.brk
+    ? `<tr class="break"><td></td><td colspan="5">${breakHTML(r)}</td></tr>`
+    : `<tr><th scope="row">${periodHTML(r)}</th>` + r.s.map((k, i) =>
+        `<td class="${i === todayIdx ? "today" : ""}">${cellHTML(k, i === todayIdx && isNow(r))}</td>`).join("") + "</tr>"
+  ).join("");
+
+  // Day view (phones)
+  const tabs = document.querySelector(".day-tabs");
+  const list = document.querySelector(".day-list");
+  let saved = null;
+  try { saved = localStorage.getItem("orologio-day"); } catch (e) {}
+  let current = saved !== null && todayIdx === -1 ? Number(saved) : (todayIdx === -1 ? 0 : todayIdx);
+
+  function renderDay() {
+    tabs.innerHTML = DAYS.map((d, i) =>
+      `<button type="button" id="day-${i}" data-i="${i}" aria-pressed="${i === current}"><b>${d.short}</b><span>${d.esShort}</span></button>`
+    ).join("");
+    list.innerHTML = ROWS.map(r => r.brk
+      ? breakHTML(r)
+      : `<div class="day-row">${periodHTML(r)}${cellHTML(r.s[current], current === todayIdx && isNow(r))}</div>`
+    ).join("");
+  }
+  tabs.addEventListener("click", e => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    current = Number(b.dataset.i);
+    try { localStorage.setItem("orologio-day", current); } catch (e) {}
+    renderDay();
+    document.getElementById("day-" + current).focus();
+  });
+  renderDay();
+</script>
+</body>
+</html>

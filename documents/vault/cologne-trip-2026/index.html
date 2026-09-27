@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Protected document</title>
+<link rel="stylesheet" href="../unlock.css">
+</head>
+<body>
+<main>
+  <form id="unlock" hidden>
+    <h1>Protected document</h1>
+    <p>Enter the password to open it.</p>
+    <input id="password" type="password" autocomplete="current-password" required autofocus aria-label="Password">
+    <button type="submit">Open</button>
+    <p id="status" role="status"></p>
+  </form>
+  <noscript><p>This page needs JavaScript.</p></noscript>
+</main>
+<script src="../common.js"></script>
+<script src="../unlock.js"></script>
+</body>
+</html>

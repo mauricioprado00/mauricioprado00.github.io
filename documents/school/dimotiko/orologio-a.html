@@ -104,14 +104,19 @@
     font-weight: 700;
   }
   thead th .es { font-size: 11.5px; font-weight: 500; margin-top: 1px; }
-  thead th.today { color: var(--accent); }
-  thead th.today .es { color: var(--accent); opacity: .8; }
-  .today-tag {
-    display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 99px;
-    font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
-    background: var(--accent); color: var(--surface); vertical-align: 2px;
+  /* today's column and the current period are marked on screen only, never in print */
+  .today-tag { display: none; }
+  @media screen {
+    thead th.today { color: var(--accent); }
+    thead th.today .es { color: var(--accent); opacity: .8; }
+    .today-tag {
+      display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 99px;
+      font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      background: var(--accent); color: var(--surface); vertical-align: 2px;
+    }
+    td.today { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .cell.now { outline: 2.5px solid var(--now-ring); outline-offset: 1px; }
   }
-  td.today { background: color-mix(in srgb, var(--accent) 6%, transparent); }
 
   .period { font-variant-numeric: tabular-nums; }
   .period b { display: block; font-size: 14px; }
@@ -130,7 +135,6 @@
   }
   .cell .el { display: block; font-weight: 600; font-size: 14.5px; line-height: 1.2; }
   .cell .es { font-size: 11.5px; margin-top: 3px; color: inherit; opacity: .78; }
-  .cell.now { outline: 2.5px solid var(--now-ring); outline-offset: 1px; }
 
   tr.break td { padding-block: 0; }
   .break-bar {

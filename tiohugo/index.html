@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Privado</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fffdf8;--ink:#1f2a24;--muted:#6b756f;--line:#e4e0d6;--accent:#1f8a4c;--err:#b42318}
+@media (prefers-color-scheme:dark){:root{--bg:#121815;--card:#1a221e;--ink:#e6ece8;--muted:#93a39a;--line:#2a3530;--accent:#4fc283;--err:#f97066}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+form{width:100%;max-width:340px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+h1{font-size:1.1rem;margin:0 0 14px}
+input{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+input:focus{outline:2px solid var(--accent);outline-offset:1px}
+button{margin-top:12px;width:100%;font:inherit;font-weight:600;padding:10px;border:0;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+.err{color:var(--err);font-size:.9rem;min-height:1.4em;margin:10px 0 0}
+</style>
+</head>
+<body>
+<form id="unlock">
+<h1>Contenido privado</h1>
+<input id="password" type="password" autocomplete="current-password" placeholder="Contraseña" aria-label="Contraseña" required autofocus>
+<button id="open">Abrir</button>
+<p class="err" id="error" role="alert"></p>
+</form>
+<script>
+// Encrypted by site/build.mjs: AES-256-GCM, key = PBKDF2-SHA-256(password, salt, iter).
+const PAYLOAD = {"iter":600000,"salt":"ixAQ3oqSeUNsnP4bek4n5w==","iv":"ZrEXN6zYe9/RrfPZ","ct":"kOqDflnKvzTbMph1VAUWq+f8Et71xMI3e3b2Md3b+aXS5ggXvS9Gyprd42pyVktwLUfTOsOWrof7Zxw5AyKLd19MrI7Ti9KNyk9U2RvW3QbEjk2OFFnBbCkDUZ8M0+PNo2unjtE88R6+RLZoE1GnqzG9wCB4mThfR2JXwo7VcJ4VS7GEe1a4P+XaxuKsA4Bs360RZV1tylyhOMXNWJTm4CcwtRtm7xFDUSHvxvqAF30ac9tojiSAoMwf7OvwSeZ7Wvgkb7F5hBKKBMlKXj8L8ZwUbiw/Zy9Mf6xOP6FNMo7SoHeZBXUqKtd3pld24pX48YXrc1OHi3uPqAfzvmRQXh89vPdSgW82PbJkPp3Vsh42YaKiYj3B+7jeXvkWEDVTwD0FnUGWyBNvfoCUIGLOG5zc/fI/nt9z8pDadDQy4zU4sTuyb437Xf6jPbXu9kuodZs3pSvOnX5BhBdYQ+BZyo7ok1ssznoJc8Rlxc9iKpL2ZUTWFeKPHhg1CAbaF5sbMPlIaOL4MKw8CuXAVMJRGg5vcFAZbEIKwstr+qlKJ7RiWiTKLhhs7L5eFgphS5EfceG3Yt7n/IjpzYB2P7P8CfYzbAu/PEPn2iKirlS3k3Nshj2z5PlE5uoOnf9MTuSPG41qk1tdm27lR2+l7nTnz2u1pHyOovqEp1e+nmAyP8Vbx9eYyqEHWsV+RKrT3P2tKOqSitx2irJwJFRvJ8oNeWLR1aa1UbIdReH5AMqDhbHnlocUHsd1cQGrxvlHpQuw8Igjr80e7lxS2BaGrmKWgYaqhde9S1IuEL2oOik/2n3ZREx+uuK1WmLZI9IFDJIwHgoHtJL4jP585rjxMMPa88Qnpt86sNEZyZP9KErIqzC6tEYvusAbW0m/GzrqOFfymG3lcgQwYeKiIniqa9Da3OqdaSSqMJLiAPOKa57FRRiTf2/RKBThcPUDNW6EzyVkaxnH/hOObtgiow89AG+YjMUmYHTjJ7PzHg+2Mo+xUo+udtrxazewp04E41wNr5t4yrMUh1yRae1p9DD2qw97wwiqCPjaP+Ih28HtR1uGQo2aMIsZFjI6J1vpIecIlBookKmjhEqTz3qcuRu8XcQwdfTMLqPAckirbPbX05ua+61YcyThgDEtYWQbn5mQBhaSXCRSzdXct9ohXIHJ9xSjod+W+rS48oENhiTC8FAhwcERGsp8KIZRJSsVaBRrmcH3MYowdd66q80DDJ46TvQ7QlSkAE87ztrDaIdrG6TDli2+Polj2oBApwcBuVzg//WkaGjqe14X5gFAyXFNBvvTMBnWhEX7n+hUQ24RXCMv53mWT0moJ4M0k2aQLIEj/07iHf6cQ9GDYhuLQjdFYYdj94XpMtf2uO47I1KAIwzBvPKlSJ6l8KqKm3bOYBwXfVTXOoBsRYi65zVEbkyG+dyOcdZCAP3OrgMxRPL+9x6uMxJFEGRp3L5T3fS5kio+2PmYhox61ERzzNt6AvX0J9dOdaSVr/kfv4K2OgHE1YC6Zu6Q+beFokkfpYx4qN9fXnXVqMP2IpEElD616gAcQJW0CLfAzm3SIQM53b7Zx0s9UjyNZ4JwYI7x/Tu47JQMfqfmDCv2OFF6jRTSEVtfky+yqrG5DIU5K0OLxwkF8EvrYRAYQkB/wWXxnvBA3lGCdacJdse3+oWfP/sqUhkqvwHK44vUpu4V35/eiXfQ+ObCOgysKqKFVsNyLfywqKIUtn3XH5vksgQyk9OQoZbm977RJW2vmASFE4KOesund7p9cRCMvxvyfIfR23xNczy2BuhbITRnylz0Ogn0auqQpNqNcQi9iEMlGs0NJ2gYf/SKBLD42TUXKwOB9Lh09gZr9GzQxmUQJJg90dCGqyAmpylmXLSQ3Jl3mXqJFXJM4brN8ZIRUuSznJfZn4S60bLXMK0RYz9SXlFMKMyJWkj3vZShjWE5Q9qTGIm1bHL+Qji4uWlPL/3VbM3dZ4sV0BbcdEuZSFVO5rcjDdOaJmbSUx2UJLierw/cZ0CBbx8ZO7ITqcPazksv/ZDWYoFbJT6n1IS8On1ELoHDh51gGpOt32Lflg/XHj7PVgECXPR6eE8ofPM0eHBwsuxLnBqZfDdwULKMbn1B6a8lQrBgeTz0mDQApSrhyDjM7LKGkmA6OrMR+t+nRbje3akDNEYP3aw0IurlBgoRLr4HviMT2RQozxtxNnhcHAonX9tryAXRBgsVpHpPnZBalyw0CpCm5VSr2gO/gKpBkJreLxTfhYUzNq/bmlBFu3mQeBLzm/Nx0AjtVTUEGE71D7+UQc2Cvm1ZCyU98mfOQcSCqYaj8OB8w4frayRS4Yu0kqCxKeP73sOwOdRoEMGFKpGag4XoaVEsfMp5zxEwbZHec5n9zaq3ZU/9q1PS76OwB9QJcdPUowUqSt2JbrX2RkiZ3LEaHj4YYO7Ms8LLeJsnXxkGlaMUAylk7J8IENs7+RrP7a5N/7V9+pEWM2sSAYFfZ5O8Bw9HNsNfcsgJpbxxJQPMte4EQ3jcobu6tks5mTQZv1xF6O8HVA3ZNbwv083HBud56SKpr17oNlTpJFRUxybMmUei7sKPBrnmrWSG1J51OI0G1L6j5UM/5K489TZIAozllV93sZJSIqDgxmtWLI2d2vxx14BWe5Gppnm3A4jWIu8HJ73Rf4RH9eUS7+0k0XooxEeK3s6kSXuqMRBvxY3FWXb4AxLlrQk9JRJPXU01M25z9qV/uApnnViW+LEjZJEAA2Tuf8/Pe5nQFp8N1YyAcpFPfWMOZegsHQaWackhTdO3WKLlekOEjDmYe/1a6mXfcl7oxFBEd/uJAIn0/SVyVxWGt8wsbZgVDq0zQlP4d7X/fTeKXu1RSpUr0VQujm1Ik0mQ9l7ZOpEhkqZtDNsKfNYvTFOwJsXOClzs8RdiyvPgLhHe8iByoJhc7Nl8Rq33sZJwDCEbkZX03EKe0lcmvq1OTMESr+uY47is9pYkV3DuqJsyIAGcwI+aNpRtc/6SG6mNivtfPHs6iSDYBsoxU8P2necVoxLjU/8rsBi49ZTeBrBim7FHm31mEaLu7IiHzXH5Kb6l8Y3R1650WX+/i1VsKPlb4bpDhSttXDpifTQ3WAvX8QpNZo9Xrog+4fgBdWUO34vjja46UaZpiRYBDB/8V7j8BCw8TC9Z8lQesZHB6rvfLt1pR6YNYePoHGXzQJ+1M1IVrzC4exsPBierjNTxmMzWBOJy29VGD7CFB/B8Da1W+Q8P2XU9IV2FtOWq+v1lS/gLMwnMoQ0FFrtYx0XZ85fdmejMJ1faK2XZ4LC4NyVVfJxQDZ+kof+u1lv+E0uMdILUUwcqN6+BWJdz8xl9YbYEQcmbre5w8+l4XyEM6lbtJ7H3NnMazFrZeCUO48VCXVsWOKH3oXE1J4x5h+2hRIok8X4Q9X8AeiHItZXs0oCrmxvCnIyoiw/Uhrz4wHimJCE42jnHlLTkAJI3ORxdd+hrxRxcZK85JS7oSiQrhXEkxDVlm+cMy4nYy6GkkF02U+HpWxURV2J0oLXkz+ffxaI2rxJgI6P1Ir/8lMHV5Qggbh9hNrodmQKuA3kDtHRlLvxwx5bkFzZdCzKabWn/8e9vClLfwYb7OSfEPNy6ojfie2ni5TBaH3GMIS+2m+qW2Js666cWg4lY7zDsqnt2InzV//4l2NkTC3sgSC8BvhaFX5ws87l3xHTcdz+iJbM1QI0c7var3uiwv2SWBfdWzDXbhpfeHRXYxMKF174XYM0ZkHJJCEscefoJALgKoWavSWz0WK6dV9jhQ5kAXi6NtRhfQqodEHgseeApA8rR"};
+const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function decrypt(password) {
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: bytes(PAYLOAD.salt), iterations: PAYLOAD.iter, hash: 'SHA-256' },
+    base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes(PAYLOAD.iv) }, key, bytes(PAYLOAD.ct));
+  return new TextDecoder().decode(plain);
+}
+
+document.getElementById('unlock').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const button = document.getElementById('open');
+  const error = document.getElementById('error');
+  button.disabled = true;
+  error.textContent = '';
+  let html;
+  try {
+    html = await decrypt(document.getElementById('password').value);
+  } catch (_) {
+    error.textContent = 'Contraseña incorrecta.';
+    button.disabled = false;
+    return;
+  }
+  document.open();
+  document.write(html);
+  document.close();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+# Builds the site from this repo plus the src/ directory of the private repo
+# mauricioprado00/githubio-private-pages, and deploys it to GitHub Pages.
+# The private files are published, but they never enter this repo's source or
+# history. Their names are kept out of this public run, too: the archive is
+# built without listing files, and the artifact is deleted once it is deployed.
+#
+# Runs on every push here (including el-enmascarado-de-terciopelo submodule
+# bumps), and when the private repo starts it after a push to its src/.
+#
+# Requires the PRIVATE_PAGES_TOKEN secret: a fine-grained PAT with access to
+# mauricioprado00/githubio-private-pages and this repo, permissions
+# "Contents: Read-only" and "Actions: Read and write" (the private repo keeps
+# the same token as PAGES_BUILD_TOKEN to start this workflow).
+# Settings > Pages > Source must be "GitHub Actions".
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: public
+          submodules: true
+
+      - uses: actions/checkout@v5
+        with:
+          repository: mauricioprado00/githubio-private-pages
+          token: ${{ secrets.PRIVATE_PAGES_TOKEN }}
+          path: private
+
+      - name: Assemble the site
+        run: |
+          mkdir site
+          tar -C public --exclude=.git --exclude=.github --exclude=.gitmodules --exclude=./README.md -cf - . | tar -C site -xf -
+          cp -a private/src/. site/
+          # Not verbose: a file list here would be public in this run's log.
+          tar -C site --dereference --hard-dereference -cf "$RUNNER_TEMP/artifact.tar" .
+
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      actions: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      # Anyone signed in to GitHub can download a public repo's artifacts.
+      - name: Delete the artifact
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/${{ needs.build.outputs.artifact-id }}"

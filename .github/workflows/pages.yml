@@ -12,6 +12,12 @@
 # mauricioprado00/githubio-private-pages, permission "Contents: Read-only".
 # (The private repo starts this workflow with its own SITE_DEPLOY_TOKEN.)
 # Settings > Pages > Source must be "GitHub Actions".
+#
+# The deploy calls the Pages API itself instead of using actions/deploy-pages,
+# which always sends this repo's commit as the build version. That commit never
+# changes when only the private repo does, and GitHub expects each deployment's
+# build version to be unique: deploys that reused one reported success but
+# sometimes left the previous site live. The private repo's commit is used.
 name: Deploy GitHub Pages
 
 on:
@@ -31,12 +37,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      version: ${{ steps.version.outputs.sha }}
     steps:
       - uses: actions/checkout@v5
         with:
           repository: mauricioprado00/githubio-private-pages
           token: ${{ secrets.SITE_DEPLOY_TOKEN }}
           submodules: true
+
+      - id: version
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       # Not verbose: a file list here would be public in this run's log.
       - name: Archive src/
@@ -62,7 +72,28 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          oidc=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          echo "::add-mask::$oidc"
+          echo "Deploying build version $VERSION"
+          res=$(gh api -X POST "repos/$GITHUB_REPOSITORY/pages/deployments" \
+            -F artifact_id="$ARTIFACT_ID" -f pages_build_version="$VERSION" -f oidc_token="$oidc")
+          echo "page_url=$(jq -r .page_url <<<"$res")" >> "$GITHUB_OUTPUT"
+          id=$(jq -r .id <<<"$res")
+          for _ in $(seq 120); do
+            status=$(gh api "repos/$GITHUB_REPOSITORY/pages/deployments/$id" --jq .status)
+            echo "Status: $status"
+            case "$status" in
+              succeed) exit 0 ;;
+              *fail*|*error*|*cancel*|*lost*) exit 1 ;;
+            esac
+            sleep 5
+          done
+          echo "Timed out waiting for the deployment"; exit 1
 
       # Anyone signed in to GitHub can download a public repo's artifacts.
       - name: Delete the artifact

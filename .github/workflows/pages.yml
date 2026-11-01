@@ -5,12 +5,14 @@
 # the archive is built without listing files, and the artifact is deleted once
 # it is deployed.
 #
-# The private repo starts this workflow after each push to its src/.
+# After each push to its src/, the private repo pushes an empty "Deploy site"
+# commit here, which runs this workflow with a new commit, so Pages gets a new
+# build version every time.
 #
 # Requires the SITE_DEPLOY_TOKEN secret: the fine-grained PAT
 # "github.io.SITE_DEPLOY_TOKEN", with access to
 # mauricioprado00/githubio-private-pages, permission "Contents: Read-only".
-# (The private repo starts this workflow with its own SITE_DEPLOY_TOKEN.)
+# (The private repo pushes here with its own SITE_DEPLOY_TOKEN.)
 # Settings > Pages > Source must be "GitHub Actions".
 name: Deploy GitHub Pages
 

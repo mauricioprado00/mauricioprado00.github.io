@@ -1,11 +1,11 @@
-# Builds the site from this repo plus the src/ directory of the private repo
-# mauricioprado00/githubio-private-pages, and deploys it to GitHub Pages.
-# The private files are published, but they never enter this repo's source or
-# history. Their names are kept out of this public run, too: the archive is
-# built without listing files, and the artifact is deleted once it is deployed.
+# Deploys the site from the src/ directory of the private repo
+# mauricioprado00/githubio-private-pages (with its submodules) to GitHub Pages.
+# This repo holds nothing but this workflow, so the published files never
+# enter its source or history. Their names are kept out of this public run, too:
+# the archive is built without listing files, and the artifact is deleted once
+# it is deployed.
 #
-# Runs on every push here (including el-enmascarado-de-terciopelo submodule
-# bumps), and when the private repo starts it after a push to its src/.
+# The private repo starts this workflow after each push to its src/.
 #
 # Requires the PRIVATE_PAGES_TOKEN secret: a fine-grained PAT with access to
 # mauricioprado00/githubio-private-pages and this repo, permissions
@@ -34,22 +34,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          path: public
-          submodules: true
-
-      - uses: actions/checkout@v5
-        with:
           repository: mauricioprado00/githubio-private-pages
           token: ${{ secrets.PRIVATE_PAGES_TOKEN }}
-          path: private
+          submodules: true
 
-      - name: Assemble the site
-        run: |
-          mkdir site
-          tar -C public --exclude=.git --exclude=.github --exclude=.gitmodules --exclude=./README.md -cf - . | tar -C site -xf -
-          cp -a private/src/. site/
-          # Not verbose: a file list here would be public in this run's log.
-          tar -C site --dereference --hard-dereference -cf "$RUNNER_TEMP/artifact.tar" .
+      # Not verbose: a file list here would be public in this run's log.
+      - name: Archive src/
+        run: tar -C src --exclude=.git --exclude=.github --dereference --hard-dereference -cf "$RUNNER_TEMP/artifact.tar" .
 
       - id: upload
         uses: actions/upload-artifact@v4

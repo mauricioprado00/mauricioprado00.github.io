@@ -7,10 +7,10 @@
 #
 # The private repo starts this workflow after each push to its src/.
 #
-# Requires the PRIVATE_PAGES_TOKEN secret: a fine-grained PAT with access to
-# mauricioprado00/githubio-private-pages and this repo, permissions
-# "Contents: Read-only" and "Actions: Read and write" (the private repo keeps
-# the same token as PAGES_BUILD_TOKEN to start this workflow).
+# Requires the SITE_DEPLOY_TOKEN secret: the fine-grained PAT
+# "github.io.SITE_DEPLOY_TOKEN", with access to
+# mauricioprado00/githubio-private-pages, permission "Contents: Read-only".
+# (The private repo starts this workflow with its own SITE_DEPLOY_TOKEN.)
 # Settings > Pages > Source must be "GitHub Actions".
 name: Deploy GitHub Pages
 
@@ -35,7 +35,7 @@ jobs:
       - uses: actions/checkout@v5
         with:
           repository: mauricioprado00/githubio-private-pages
-          token: ${{ secrets.PRIVATE_PAGES_TOKEN }}
+          token: ${{ secrets.SITE_DEPLOY_TOKEN }}
           submodules: true
 
       # Not verbose: a file list here would be public in this run's log.
